@@ -16,3 +16,4 @@ llama-index-vector-stores-chroma
 google-genai
 llama-index-llms-google-genai
 llama-index-embeddings-google-genai
+langgraph>=0.2.0
