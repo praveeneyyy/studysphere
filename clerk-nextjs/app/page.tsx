@@ -1,7 +1,11 @@
 import { Show } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
 
-export default function Home() {
+export default async function Home() {
+  const user = await currentUser();
+  const firstName = user?.firstName || "User";
+
   return (
     <div className="flex flex-col flex-1 items-center justify-center min-h-[80vh] bg-zinc-50 font-sans dark:bg-black p-8">
       <main className="flex flex-col items-center justify-center max-w-xl text-center gap-8 bg-white dark:bg-zinc-950 p-12 rounded-3xl shadow-lg border border-gray-100 dark:border-zinc-850">
@@ -28,10 +32,10 @@ export default function Home() {
         <Show when="signed-in">
           <div className="flex flex-col gap-4">
             <h2 className="text-2xl font-bold text-green-600 dark:text-green-400">
-              🎉 You are successfully signed in!
+              🎉 Welcome back, {firstName}!
             </h2>
             <p className="text-zinc-650 dark:text-zinc-400">
-              You now have access to secure pages. You can click on the user profile button in the top right header to manage your account details or sign out.
+              You are successfully signed in and your session is active. You can manage your account or sign out using the profile button in the header.
             </p>
           </div>
         </Show>
