@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+alembic
+pydantic
+pydantic-settings
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+httpx
+chromadb
+llama-index-core
+llama-index-readers-file
+llama-index-vector-stores-chroma
+llama-index-llms-gemini
+llama-index-embeddings-gemini
