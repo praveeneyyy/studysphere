@@ -13,5 +13,6 @@ chromadb
 llama-index-core
 llama-index-readers-file
 llama-index-vector-stores-chroma
-llama-index-llms-gemini
-llama-index-embeddings-gemini
+google-genai
+llama-index-llms-google-genai
+llama-index-embeddings-google-genai

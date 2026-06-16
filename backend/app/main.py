@@ -8,6 +8,14 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="StudySphere AI API", version="1.0.0")
 
+@app.on_event("startup")
+def startup_event():
+    from app.services.document.parser import init_settings
+    try:
+        init_settings()
+    except Exception as e:
+        print(f"Warning: Gemini models were not initialized at startup (GOOGLE_API_KEY may be missing). Details: {e}")
+
 # Setup CORS for the Next.js frontend
 app.add_middleware(
     CORSMiddleware,
