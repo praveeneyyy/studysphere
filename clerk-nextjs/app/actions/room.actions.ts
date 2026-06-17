@@ -25,3 +25,35 @@ export async function createRoom(data: {
 
   return JSON.parse(JSON.stringify(newRoom));
 }
+
+export async function joinRoom(roomId: string) {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  await connectDB();
+
+  await Room.findByIdAndUpdate(roomId, {
+    $addToSet: {
+      members: userId,
+    },
+  });
+}
+
+export async function leaveRoom(roomId: string) {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  await connectDB();
+
+  await Room.findByIdAndUpdate(roomId, {
+    $pull: {
+      members: userId,
+    },
+  });
+}

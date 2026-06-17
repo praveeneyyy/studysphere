@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, model, models } from "mongoose";
 export interface IMessage extends Document {
   roomId: string;
   senderId: string;
+  senderName?: string;
   content: string;
   createdAt: Date;
   updatedAt: Date;
@@ -10,11 +11,23 @@ export interface IMessage extends Document {
 
 const MessageSchema = new Schema<IMessage>(
   {
-    roomId: { type: String, required: true },
-    senderId: { type: String, required: true },
-    content: { type: String, required: true },
+    roomId: {
+      type: String,
+      required: true,
+    },
+    senderId: {
+      type: String,
+      required: true,
+    },
+    senderName: String,
+    content: {
+      type: String,
+      required: true,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 const Message = models.Message || model<IMessage>("Message", MessageSchema);
