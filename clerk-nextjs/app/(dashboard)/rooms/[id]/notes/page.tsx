@@ -56,6 +56,7 @@ export default async function RoomNotesPage({ params }: PageProps) {
       roomId={id}
       roomTitle={plainRoom.title}
       currentUserName={currentUserName}
+      currentUserId={userId}
     />
   );
 }

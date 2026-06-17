@@ -4,6 +4,14 @@ import { revalidatePath } from "next/cache";
 import { currentUser } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/mongodb";
 import Room from "@/models/Room";
+import Note from "@/models/Note";
+import NoteState from "@/models/NoteState";
+import Message from "@/models/Message";
+import Flashcard from "@/models/Flashcard";
+import Quiz from "@/models/Quiz";
+import StudySession from "@/models/StudySession";
+import QuizAttempt from "@/models/QuizAttempt";
+import KnowledgeChunk from "@/models/KnowledgeChunk";
 
 export async function createRoom(title: string, subject: string, description?: string) {
   try {
@@ -123,6 +131,20 @@ export async function deleteRoom(roomId: string) {
     if (!deletedRoom) {
       throw new Error("Room not found");
     }
+
+    // Clean up all orphaned assets linked to this room
+    await Promise.all([
+      Note.deleteMany({ roomId }),
+      NoteState.deleteMany({ roomId }),
+      Message.deleteMany({ roomId }),
+      Flashcard.deleteMany({ roomId }),
+      Quiz.deleteMany({ roomId }),
+      StudySession.deleteMany({ roomId }),
+      QuizAttempt.deleteMany({ roomId }),
+      KnowledgeChunk.deleteMany({ roomId }),
+    ]);
+
+    console.log(`[Room CleanUp] Successfully deleted room ${roomId} and all associated data.`);
 
     revalidatePath("/rooms");
     return { success: true };

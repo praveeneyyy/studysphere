@@ -14,11 +14,13 @@ export default function NotesClient({
   roomId,
   roomTitle,
   currentUserName,
+  currentUserId,
 }: {
   initialContent: string;
   roomId: string;
   roomTitle: string;
   currentUserName: string;
+  currentUserId: string;
 }) {
   const [isMounted, setIsMounted] = useState(false);
 
@@ -43,6 +45,7 @@ export default function NotesClient({
       roomId={roomId}
       roomTitle={roomTitle}
       currentUserName={currentUserName}
+      currentUserId={currentUserId}
     />
   );
 }
@@ -52,11 +55,13 @@ function CollaborativeEditor({
   roomId,
   roomTitle,
   currentUserName,
+  currentUserId,
 }: {
   initialContent: string;
   roomId: string;
   roomTitle: string;
   currentUserName: string;
+  currentUserId: string;
 }) {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -83,8 +88,9 @@ function CollaborativeEditor({
     return new HocuspocusProvider({
       url,
       name: roomId,
+      token: currentUserId,
     });
-  }, [roomId]);
+  }, [roomId, currentUserId]);
 
   // Set up Tiptap Editor
   const editor = useEditor({

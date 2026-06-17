@@ -2,6 +2,7 @@ import { Server } from "@hocuspocus/server";
 import mongoose from "mongoose";
 import * as Y from "yjs";
 import NoteState from "../models/NoteState";
+import Room from "../models/Room";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -19,6 +20,29 @@ mongoose
 // Configure Hocuspocus Server
 const hocuspocusServer = new Server({
   port: 3006,
+
+  async onAuthenticate({ token, documentName }) {
+    console.log(`[Hocuspocus] Authenticating token ${token} for room ${documentName}`);
+    if (!token) {
+      throw new Error("Unauthorized: Missing authentication token.");
+    }
+
+    try {
+      const room = await Room.findById(documentName);
+      if (!room) {
+        throw new Error("Unauthorized: Room does not exist.");
+      }
+
+      if (!room.members.includes(token)) {
+        throw new Error("Unauthorized: User is not a member of this room.");
+      }
+
+      console.log(`[Hocuspocus] Authentication successful for user ${token} in room ${documentName}`);
+    } catch (err: any) {
+      console.error(`[Hocuspocus] Auth failed:`, err.message);
+      throw err;
+    }
+  },
 
   async onLoadDocument({ documentName }) {
     console.log(`[Hocuspocus] Loading document for room: ${documentName}`);
