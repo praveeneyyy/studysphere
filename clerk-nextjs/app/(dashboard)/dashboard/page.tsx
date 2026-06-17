@@ -5,23 +5,13 @@ import User from "@/models/User";
 export default async function Dashboard() {
   const user = await currentUser();
 
+  let isSynced = false;
   if (user?.id) {
     await connectDB();
     const existingUser = await User.findOne({
       clerkId: user.id,
     });
-
-    if (!existingUser) {
-      await User.create({
-        clerkId: user.id,
-        name:
-          user.fullName ||
-          `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
-          "User",
-        email: user.emailAddresses[0]?.emailAddress,
-        image: user.imageUrl,
-      });
-    }
+    isSynced = !!existingUser;
   }
 
   return (
@@ -50,9 +40,15 @@ export default async function Dashboard() {
             </h3>
             <div className="flex flex-col gap-2 mt-2">
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-500">Account Status</span>
-                <span className="text-green-600 dark:text-green-400 font-medium">
-                  Active (Synced)
+                <span className="text-zinc-500">Database Sync Status</span>
+                <span
+                  className={`font-semibold ${
+                    isSynced
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-amber-600 dark:text-amber-400"
+                  }`}
+                >
+                  {isSynced ? "Synced (Webhook Active)" : "Sync Pending"}
                 </span>
               </div>
               <div className="flex justify-between text-sm">

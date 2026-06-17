@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { getRooms, createRoom, deleteRoom } from "@/lib/actions/room";
+import { getRooms, deleteRoom } from "@/lib/actions/room";
 
 interface IRoomData {
   _id: string;
   title: string;
   subject: string;
+  description?: string;
   createdBy: string;
   members: string[];
   createdAt: string;
@@ -17,12 +18,6 @@ export default function RoomsPage() {
   const [rooms, setRooms] = useState<IRoomData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // Create room form state
-  const [isOpen, setIsOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [subject, setSubject] = useState("General");
-  const [submitting, setSubmitting] = useState(false);
 
   // Load rooms on mount
   useEffect(() => {
@@ -38,26 +33,6 @@ export default function RoomsPage() {
       setError(res.error || "Failed to load study rooms");
     }
     setLoading(false);
-  }
-
-  async function handleCreateRoom(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim() || !subject.trim()) return;
-
-    setSubmitting(true);
-    setError("");
-
-    const res = await createRoom(title, subject);
-    if (res.success && res.room) {
-      setTitle("");
-      setSubject("General");
-      setIsOpen(false);
-      // Prepend the new room to local list
-      setRooms((prev) => [res.room, ...prev]);
-    } else {
-      setError(res.error || "Failed to create room");
-    }
-    setSubmitting(false);
   }
 
   async function handleDeleteRoom(id: string) {
@@ -101,17 +76,17 @@ export default function RoomsPage() {
             Collaborate, chat, and study with others in real-time.
           </p>
         </div>
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-semibold text-sm px-6 py-3 shadow-md shadow-purple-500/10 transition-all cursor-pointer"
+        <Link
+          href="/rooms/create"
+          className="bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-semibold text-sm px-6 py-3 shadow-md shadow-purple-500/10 transition-all cursor-pointer flex items-center justify-center"
         >
           Create Room
-        </button>
+        </Link>
       </div>
 
       {/* Error display */}
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 rounded-2xl text-sm">
+        <div className="p-4 bg-red-50 dark:bg-red-955/20 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 rounded-2xl text-sm">
           {error}
         </div>
       )}
@@ -129,19 +104,19 @@ export default function RoomsPage() {
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
             Be the first to create a study room and invite your study group!
           </p>
-          <button
-            onClick={() => setIsOpen(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-semibold text-sm px-6 py-3 transition-all cursor-pointer"
+          <Link
+            href="/rooms/create"
+            className="bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-semibold text-sm px-6 py-3 transition-all cursor-pointer inline-flex items-center justify-center"
           >
             Create Your First Room
-          </button>
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {rooms.map((room) => (
             <div
               key={room._id}
-              className="bg-white dark:bg-zinc-900 border border-gray-250 dark:border-zinc-800 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-56"
+              className="bg-white dark:bg-zinc-900 border border-gray-250 dark:border-zinc-800 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-64"
             >
               <div>
                 <div className="flex justify-between items-start">
@@ -163,7 +138,16 @@ export default function RoomsPage() {
                 <h3 className="font-bold text-xl text-zinc-900 dark:text-white mt-3 line-clamp-1">
                   {room.title}
                 </h3>
-                <p className="text-xs text-zinc-400 mt-1">
+                {room.description ? (
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 line-clamp-2">
+                    {room.description}
+                  </p>
+                ) : (
+                  <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-2 italic">
+                    No description provided.
+                  </p>
+                )}
+                <p className="text-xs text-zinc-400 mt-2">
                   Created by <span className="font-medium">{room.createdBy}</span>
                 </p>
               </div>
@@ -182,75 +166,6 @@ export default function RoomsPage() {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Modal Popup for Create Room */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-zinc-900 dark:text-white">
-                Create New Study Room
-              </h3>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateRoom} className="flex flex-col gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-                  Room Title
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Calculus midterm review"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-800 dark:text-zinc-150 focus:outline-none focus:border-purple-500 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-                  Subject Category
-                </label>
-                <select
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-850 dark:text-zinc-150 focus:outline-none focus:border-purple-500 transition-colors cursor-pointer"
-                >
-                  <option value="Mathematics">Mathematics</option>
-                  <option value="Computer Science">Computer Science</option>
-                  <option value="Science">Science</option>
-                  <option value="Languages">Languages</option>
-                  <option value="General">General/Other</option>
-                </select>
-              </div>
-
-              <div className="flex gap-3 justify-end mt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="px-5 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-sm font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-55 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-5 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold shadow-md shadow-purple-500/10 transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  {submitting ? "Creating..." : "Create Room"}
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
     </div>

@@ -5,7 +5,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/mongodb";
 import Room from "@/models/Room";
 
-export async function createRoom(title: string, subject: string) {
+export async function createRoom(title: string, subject: string, description?: string) {
   try {
     const user = await currentUser();
     if (!user) {
@@ -19,6 +19,7 @@ export async function createRoom(title: string, subject: string) {
     const newRoom = await Room.create({
       title,
       subject,
+      description: description || "",
       createdBy: username,
       members: [user.id],
     });
