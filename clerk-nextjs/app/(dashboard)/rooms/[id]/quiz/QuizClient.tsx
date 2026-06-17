@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { logQuizAttempt } from "@/app/actions/analytics.actions";
 
 interface IQuizQuestion {
   _id: string;
@@ -64,9 +65,14 @@ export default function QuizClient({
     ]);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (index === quizzes.length - 1) {
       setShowResult(true);
+      try {
+        await logQuizAttempt(roomId, score, quizzes.length);
+      } catch (err) {
+        console.error("Failed to log quiz attempt:", err);
+      }
     } else {
       setIndex((prev) => prev + 1);
       setSelectedOption(null);

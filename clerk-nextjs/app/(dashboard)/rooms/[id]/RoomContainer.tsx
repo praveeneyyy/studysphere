@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Chat from "./Chat";
 import AITutor from "./AITutor";
 import Link from "next/link";
+import { logHeartbeat } from "@/app/actions/analytics.actions";
 
 interface IMessage {
   _id: string;
@@ -31,6 +32,18 @@ export default function RoomContainer({
   onLeave: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<"chat" | "tutor">("chat");
+
+  useEffect(() => {
+    // Log immediately on join
+    logHeartbeat(roomId);
+
+    // Send heartbeat every 30 seconds
+    const interval = setInterval(() => {
+      logHeartbeat(roomId);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [roomId]);
 
   return (
     <div className="flex flex-col gap-6">
