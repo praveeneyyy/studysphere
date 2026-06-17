@@ -4,6 +4,7 @@ import { google } from "@ai-sdk/google";
 import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/mongodb";
 import Quiz from "@/models/Quiz";
+import { ingestQuiz } from "@/app/actions/knowledge.actions";
 
 export async function POST(req: Request) {
   try {
@@ -87,6 +88,11 @@ ${plainNotes}`;
         answer: item.answer || "Option 1",
       }))
     );
+
+    // Ingest the new quiz questions into the vectorized knowledge base
+    ingestQuiz(roomId, storedQuizzes).catch((err) => {
+      console.error("Error in quiz RAG ingestion:", err);
+    });
 
     return Response.json({ success: true, count: storedQuizzes.length });
   } catch (err: any) {

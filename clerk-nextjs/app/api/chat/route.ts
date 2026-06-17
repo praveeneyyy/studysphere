@@ -3,6 +3,7 @@ import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
 import { connectDB } from "@/lib/mongodb";
 import Message from "@/models/Message";
+import { searchKnowledge } from "@/app/actions/knowledge.actions";
 
 export async function POST(req: Request) {
   try {
@@ -12,10 +13,14 @@ export async function POST(req: Request) {
       return new Response("Missing message", { status: 400 });
     }
 
-    // Connect to MongoDB and fetch recent context if roomId is provided
+    // Connect to MongoDB and fetch context if roomId is provided
     let contextPrompt = "";
+    let ragPrompt = "";
+
     if (roomId) {
       await connectDB();
+      
+      // 1. Fetch conversational chat history context (last 50 messages)
       const dbMessages = await Message.find({ roomId })
         .sort({ createdAt: 1 })
         .limit(50);
@@ -28,18 +33,33 @@ ${dbMessages
   .join("\n")}
 `;
       }
+
+      // 2. Perform vectorized similarity search in Room Knowledge Base (RAG)
+      const ragResults = await searchKnowledge(roomId, message);
+      if (ragResults.length > 0) {
+        ragPrompt = `
+Grounded Reference Materials from this Room's Knowledge Base (Notes, Flashcards, Quizzes):
+${ragResults
+  .map((r, idx) => `[Source: ${r.sourceType}] ${r.content}`)
+  .join("\n\n")}
+`;
+      }
     }
 
     const systemPrompt = `You are StudySphere AI Tutor.
 
-Explain concepts clearly.
-Use examples.
-Help students learn.
-Do not give harmful advice.
+You must strictly answer the user's question using the provided context:
+- Grounded Reference Materials (notes paragraphs, flashcards, quizzes)
+- Recent discussion in this study room
 
-${contextPrompt}
+If the answer is not present in the context or cannot be inferred from the context, reply EXACTLY with:
+"I could not find that information in this room's knowledge base."
 
-Explain concepts in detail but keep explanations interactive and student-friendly.`;
+Do not use outside general knowledge to answer questions that are not supported by the context. Explain concepts clearly and keep explanations interactive and student-friendly.
+
+${ragPrompt}
+
+${contextPrompt}`;
 
     // Choose AI provider dynamically based on environment keys
     let model: any;

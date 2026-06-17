@@ -8,6 +8,7 @@ import { connectDB } from "@/lib/mongodb";
 import Flashcard from "@/models/Flashcard";
 import Note from "@/models/Note";
 import { revalidatePath } from "next/cache";
+import { ingestFlashcards } from "@/app/actions/knowledge.actions";
 
 export async function generateFlashcards(roomId: string) {
   const { userId } = await auth();
@@ -59,7 +60,7 @@ ${plainNotes}`;
   }
 
   await Flashcard.deleteMany({ roomId });
-  await Flashcard.insertMany(
+  const insertedCards = await Flashcard.insertMany(
     flashcardsData.map((item) => ({
       roomId,
       userId,
@@ -67,6 +68,11 @@ ${plainNotes}`;
       answer: item.answer || "Study Answer",
     }))
   );
+
+  // Ingest the new flashcards into the vectorized knowledge base
+  ingestFlashcards(roomId, insertedCards).catch((err) => {
+    console.error("Error in flashcard RAG ingestion:", err);
+  });
 
   revalidatePath(`/rooms/${roomId}/flashcards`);
 }

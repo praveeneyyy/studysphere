@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/mongodb";
 import Note from "@/models/Note";
+import { ingestNote } from "@/app/actions/knowledge.actions";
 
 export async function POST(req: Request) {
   try {
@@ -25,6 +26,11 @@ export async function POST(req: Request) {
       },
       { upsert: true, new: true }
     );
+
+    // Ingest the saved note content into the vectorized knowledge base
+    ingestNote(roomId, content || "").catch((err) => {
+      console.error("Error in note RAG ingestion:", err);
+    });
 
     return Response.json({ success: true, note: updatedNote });
   } catch (err: any) {

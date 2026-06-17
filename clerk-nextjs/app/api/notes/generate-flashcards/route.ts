@@ -4,6 +4,7 @@ import { google } from "@ai-sdk/google";
 import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/mongodb";
 import Flashcard from "@/models/Flashcard";
+import { ingestFlashcards } from "@/app/actions/knowledge.actions";
 
 export async function POST(req: Request) {
   try {
@@ -86,6 +87,11 @@ ${plainNotes}`;
         answer: item.answer || "Study Answer",
       }))
     );
+
+    // Ingest the new flashcards into the vectorized knowledge base
+    ingestFlashcards(roomId, storedFlashcards).catch((err) => {
+      console.error("Error in flashcard RAG ingestion:", err);
+    });
 
     return Response.json({ success: true, count: storedFlashcards.length });
   } catch (err: any) {

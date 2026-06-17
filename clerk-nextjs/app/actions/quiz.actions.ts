@@ -8,6 +8,7 @@ import { connectDB } from "@/lib/mongodb";
 import Quiz from "@/models/Quiz";
 import Note from "@/models/Note";
 import { revalidatePath } from "next/cache";
+import { ingestQuiz } from "@/app/actions/knowledge.actions";
 
 export async function generateQuiz(roomId: string) {
   const { userId } = await auth();
@@ -60,7 +61,7 @@ ${plainNotes}`;
   }
 
   await Quiz.deleteMany({ roomId });
-  await Quiz.insertMany(
+  const insertedQuizzes = await Quiz.insertMany(
     quizData.map((item) => ({
       roomId,
       question: item.question || "Quiz Question",
@@ -68,6 +69,11 @@ ${plainNotes}`;
       answer: item.answer || "Option 1",
     }))
   );
+
+  // Ingest the new quiz questions into the vectorized knowledge base
+  ingestQuiz(roomId, insertedQuizzes).catch((err) => {
+    console.error("Error in quiz RAG ingestion:", err);
+  });
 
   revalidatePath(`/rooms/${roomId}/quiz`);
 }
