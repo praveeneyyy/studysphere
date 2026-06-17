@@ -4,7 +4,7 @@ import Room from "@/models/Room";
 import Message from "@/models/Message";
 import { connectDB } from "@/lib/mongodb";
 import { joinRoom, leaveRoom } from "@/app/actions/room.actions";
-import Chat from "./Chat";
+import RoomContainer from "./RoomContainer";
 import Link from "next/link";
 
 interface PageProps {
@@ -110,7 +110,7 @@ export default async function RoomPage({ params }: PageProps) {
   }
 
   return (
-    <Chat
+    <RoomContainer
       roomId={id}
       initialMessages={plainMessages}
       currentUserId={userId}
