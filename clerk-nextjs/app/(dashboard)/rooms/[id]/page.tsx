@@ -1,6 +1,5 @@
-import React from "react";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import Room from "@/models/Room";
 import Message from "@/models/Message";
 import { connectDB } from "@/lib/mongodb";
@@ -94,6 +93,13 @@ export default async function RoomPage({ params }: PageProps) {
     .sort({ createdAt: 1 })
     .lean();
 
+  const clerkUser = await currentUser();
+  const currentUserName = clerkUser
+    ? `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
+      clerkUser.username ||
+      "Student"
+    : "Student";
+
   const plainRoom = JSON.parse(JSON.stringify(room));
   const plainMessages = JSON.parse(JSON.stringify(messages));
 
@@ -108,6 +114,7 @@ export default async function RoomPage({ params }: PageProps) {
       roomId={id}
       initialMessages={plainMessages}
       currentUserId={userId}
+      currentUserName={currentUserName}
       roomTitle={plainRoom.title}
       roomSubject={plainRoom.subject}
       onLeave={handleLeave}

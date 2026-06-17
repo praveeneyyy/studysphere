@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useTransition } from "react";
-import { sendMessage } from "@/app/actions/message.actions";
+import React, { useState, useEffect, useRef } from "react";
+import { socket } from "@/lib/socket";
 import MessageBubble from "./MessageBubble";
 
 interface IMessage {
@@ -16,6 +16,7 @@ export default function Chat({
   roomId,
   initialMessages,
   currentUserId,
+  currentUserName,
   roomTitle,
   roomSubject,
   onLeave,
@@ -23,34 +24,58 @@ export default function Chat({
   roomId: string;
   initialMessages: IMessage[];
   currentUserId: string;
+  currentUserName: string;
   roomTitle: string;
   roomSubject: string;
   onLeave: () => void;
 }) {
   const [text, setText] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const [messages, setMessages] = useState<IMessage[]>(initialMessages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Sync initialMessages if they change on server revalidation
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [initialMessages]);
+
+  // Connect to socket and listen for live messages
+  useEffect(() => {
+    socket.connect();
+    socket.emit("join-room", roomId);
+
+    socket.on("receive-message", (data: IMessage) => {
+      setMessages((prev) => {
+        // Avoid duplicate messages if received from our own socket event
+        if (prev.some((m) => m._id === data._id)) {
+          return prev;
+        }
+        return [...prev, data];
+      });
+    });
+
+    return () => {
+      socket.off("receive-message");
+      socket.disconnect();
+    };
+  }, [roomId]);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [initialMessages]);
+  }, [messages]);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim() || isPending) return;
+    if (!text.trim()) return;
 
-    const content = text;
-    setText("");
-
-    startTransition(async () => {
-      try {
-        await sendMessage(roomId, content);
-      } catch (err: any) {
-        alert(err.message || "Failed to send message");
-        setText(content); // restore text on error
-      }
+    socket.emit("send-message", {
+      roomId,
+      senderId: currentUserId,
+      senderName: currentUserName,
+      message: text,
     });
+
+    setText("");
   };
 
   return (
@@ -70,15 +95,15 @@ export default function Chat({
             </div>
             <button
               onClick={onLeave}
-              className="px-4 py-2 border border-zinc-200 dark:border-zinc-850 text-zinc-600 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+              className="px-4 py-2 border border-zinc-200 dark:border-zinc-850 text-zinc-650 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
             >
               Leave Room
             </button>
           </div>
 
-          {/* Messages display */}
+          {/* Messages list */}
           <div className="flex-1 overflow-y-auto pr-2 space-y-4 min-h-0">
-            {initialMessages.length === 0 ? (
+            {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 text-sm">
                 <span>Welcome to the room chat board!</span>
                 <span className="text-xs mt-1">
@@ -86,7 +111,7 @@ export default function Chat({
                 </span>
               </div>
             ) : (
-              initialMessages.map((message) => (
+              messages.map((message) => (
                 <MessageBubble
                   key={message._id}
                   message={message}
@@ -106,18 +131,17 @@ export default function Chat({
           <input
             type="text"
             required
-            placeholder="Type your message here..."
+            placeholder="Type a real-time message..."
             value={text}
             onChange={(e) => setText(e.target.value)}
-            disabled={isPending}
-            className="flex-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-850 dark:text-zinc-150 focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50"
+            className="flex-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-855 dark:text-zinc-150 focus:outline-none focus:border-purple-500 transition-colors"
           />
           <button
             type="submit"
-            disabled={isPending || !text.trim()}
+            disabled={!text.trim()}
             className="bg-purple-600 hover:bg-purple-700 text-white rounded-2xl px-6 font-semibold text-sm transition-colors cursor-pointer disabled:opacity-50"
           >
-            {isPending ? "Sending..." : "Send"}
+            Send
           </button>
         </form>
       </div>
@@ -141,11 +165,15 @@ export default function Chat({
 
             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/60">
               <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block mb-2">
-                Room Members
+                Real-Time Chat
               </span>
-              <p className="text-sm text-zinc-500 dark:text-zinc-450">
-                You are currently in this study session. Type messages in the chat to discuss!
-              </p>
+              <div className="flex items-center gap-2 text-xs text-green-650 dark:text-green-400 font-medium">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                Connected to Socket.io
+              </div>
             </div>
           </div>
         </div>
