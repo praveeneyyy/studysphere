@@ -49,6 +49,12 @@ export default async function DashboardLayout({
             >
               Profile
             </Link>
+            <Link
+              href="/dashboard/settings"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-950 dark:hover:text-white transition-all"
+            >
+              Settings
+            </Link>
           </nav>
         </div>
 
