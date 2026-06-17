@@ -1,25 +1,107 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
+import { HocuspocusProvider } from "@hocuspocus/provider";
 
 export default function NotesClient({
   initialContent,
   roomId,
   roomTitle,
+  currentUserName,
 }: {
   initialContent: string;
   roomId: string;
   roomTitle: string;
+  currentUserName: string;
+}) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3">
+          <span className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></span>
+          <span className="text-sm text-zinc-500 font-medium">Connecting to study room...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <CollaborativeEditor
+      initialContent={initialContent}
+      roomId={roomId}
+      roomTitle={roomTitle}
+      currentUserName={currentUserName}
+    />
+  );
+}
+
+function CollaborativeEditor({
+  initialContent,
+  roomId,
+  roomTitle,
+  currentUserName,
+}: {
+  initialContent: string;
+  roomId: string;
+  roomTitle: string;
+  currentUserName: string;
 }) {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
+  // Random cursor color
+  const userColor = useMemo(() => {
+    const COLORS = [
+      "#958DF1",
+      "#F98181",
+      "#FBBC88",
+      "#FAF594",
+      "#70C288",
+      "#76A1EF",
+      "#E5A8E2",
+    ];
+    return COLORS[Math.floor(Math.random() * COLORS.length)];
+  }, []);
+
+  // Set up Hocuspocus Provider
+  const provider = useMemo(() => {
+    const url = process.env.NEXT_PUBLIC_HOCUSPOCUS_URL || "ws://localhost:3006";
+    console.log(`[Client] Initializing HocuspocusProvider connecting to ${url}`);
+    return new HocuspocusProvider({
+      url,
+      name: roomId,
+    });
+  }, [roomId]);
+
+  // Set up Tiptap Editor
   const editor = useEditor({
-    extensions: [StarterKit],
-    content: initialContent,
+    extensions: [
+      StarterKit.configure({
+        // Disable starter-kit history so Collaboration can handle it
+        history: false,
+      } as any),
+      Collaboration.configure({
+        document: provider.document,
+      }),
+      CollaborationCursor.configure({
+        provider: provider,
+        user: {
+          name: currentUserName,
+          color: userColor,
+        },
+      }),
+    ],
     immediatelyRender: false,
     editorProps: {
       attributes: {
@@ -29,7 +111,31 @@ export default function NotesClient({
     },
   });
 
-  // Auto-save logic
+  // Handle first-time synchronization of notes content
+  useEffect(() => {
+    if (!editor || !provider) return;
+
+    const handleSynced = () => {
+      const fragment = provider.document.getXmlFragment("default");
+      // If the document Y.Doc is empty on first-time load, initialize it with current HTML content from the DB
+      if (fragment.length === 0 && initialContent) {
+        console.log("[Client] Y.Doc empty on sync. Seeding with HTML initialContent.");
+        editor.commands.setContent(initialContent);
+      }
+    };
+
+    if (provider.isSynced) {
+      handleSynced();
+    } else {
+      provider.on("synced", handleSynced);
+    }
+
+    return () => {
+      provider.off("synced", handleSynced);
+    };
+  }, [editor, provider, initialContent]);
+
+  // Auto-save logic to update the standard Note model (HTML text representation) for AI features
   useEffect(() => {
     if (!editor) return;
 
@@ -60,6 +166,13 @@ export default function NotesClient({
     return () => clearInterval(interval);
   }, [editor, roomId]);
 
+  // Clean up provider connection on unmount
+  useEffect(() => {
+    return () => {
+      provider.destroy();
+    };
+  }, [provider]);
+
   if (!editor) {
     return null;
   }
@@ -83,7 +196,7 @@ export default function NotesClient({
             <span>Notes</span>
           </div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
-            Shared Notes
+            Collaborative Notes
           </h1>
         </div>
 
@@ -101,7 +214,7 @@ export default function NotesClient({
                 second: "2-digit",
               })}`
             ) : (
-              "Draft notes"
+              "Connected"
             )}
           </span>
           <Link
@@ -133,7 +246,7 @@ export default function NotesClient({
             className={`p-2 rounded-xl text-xs font-bold italic transition-all cursor-pointer ${
               isAct("italic")
                 ? "bg-zinc-200 dark:bg-zinc-800 text-purple-650 dark:text-purple-400"
-                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-850"
             }`}
             title="Italic"
           >
@@ -144,7 +257,7 @@ export default function NotesClient({
             className={`p-2 rounded-xl text-xs font-bold line-through transition-all cursor-pointer ${
               isAct("strike")
                 ? "bg-zinc-200 dark:bg-zinc-800 text-purple-650 dark:text-purple-400"
-                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-850"
             }`}
             title="Strikethrough"
           >
@@ -155,7 +268,7 @@ export default function NotesClient({
             className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               isAct("code")
                 ? "bg-zinc-200 dark:bg-zinc-800 text-purple-650 dark:text-purple-400"
-                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-850"
             }`}
             title="Inline Code"
           >
@@ -167,7 +280,7 @@ export default function NotesClient({
             className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               isAct("heading", { level: 1 })
                 ? "bg-zinc-200 dark:bg-zinc-800 text-purple-650 dark:text-purple-400"
-                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-850"
             }`}
             title="Heading 1"
           >
@@ -178,7 +291,7 @@ export default function NotesClient({
             className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               isAct("heading", { level: 2 })
                 ? "bg-zinc-200 dark:bg-zinc-800 text-purple-650 dark:text-purple-400"
-                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-850"
             }`}
             title="Heading 2"
           >
@@ -190,7 +303,7 @@ export default function NotesClient({
             className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               isAct("bulletList")
                 ? "bg-zinc-200 dark:bg-zinc-800 text-purple-650 dark:text-purple-400"
-                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-850"
             }`}
             title="Bullet List"
           >
@@ -201,7 +314,7 @@ export default function NotesClient({
             className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               isAct("orderedList")
                 ? "bg-zinc-200 dark:bg-zinc-800 text-purple-650 dark:text-purple-400"
-                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-850"
             }`}
             title="Ordered List"
           >

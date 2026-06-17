@@ -1,6 +1,6 @@
 import React from "react";
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/mongodb";
 import Room from "@/models/Room";
 import Note from "@/models/Note";
@@ -40,6 +40,13 @@ export default async function RoomNotesPage({ params }: PageProps) {
     });
   }
 
+  const clerkUser = await currentUser();
+  const currentUserName = clerkUser
+    ? `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
+      clerkUser.username ||
+      "Student"
+    : "Student";
+
   const plainRoom = JSON.parse(JSON.stringify(room));
   const plainNote = JSON.parse(JSON.stringify(note));
 
@@ -48,6 +55,8 @@ export default async function RoomNotesPage({ params }: PageProps) {
       initialContent={plainNote.content}
       roomId={id}
       roomTitle={plainRoom.title}
+      currentUserName={currentUserName}
     />
   );
 }
+
