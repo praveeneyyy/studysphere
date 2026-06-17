@@ -37,6 +37,23 @@ The application leverages a modern microservices architecture with a **Next.js 1
   1. **Planner:** Analyzes document structures to outline sequential learning steps.
   2. **Reviewer:** cross-references the student's actual quiz attempts and performance logs to insert personalized feedback and focus areas directly onto their roadmap.
 
+### 📝 Shared Collaborative Notes (Y.js + Hocuspocus)
+* **Real-time Synchronization:** Write and edit room study notes simultaneously with classmates using the Tiptap collaborative rich-text editor.
+* **Caret Tracking:** Cursors show other active users' typing positions and Clerk profiles colored dynamically.
+* **Database Sync:** Auto-saves HTML representations to MongoDB for querying and AI tutor inputs.
+
+### 🧠 AI Quiz & Flashcard Generators
+* **SRS Flashcards:** Instantly generates 10 study flashcards using OpenAI/Gemini models directly from the shared notes content.
+* **MCQ Quizzes:** Automatically creates a 10-question multiple choice interactive practice test from notes.
+
+### 📊 Study Analytics Workspace
+* **Automated Heartbeats:** Auto-tracks study durations through client pings while users study inside a room.
+* **Distribution Graphs:** Displays time breakdown progress bars per subject, quiz averages, message volumes, and activity logs.
+
+### 🏆 Leaderboard & Gamification
+* **XP Rewards:** Earn XP for active chat participation (+2 XP), saving note updates (+10 XP), and taking room quizzes (+50 XP base, +10 XP/correct).
+* **Standings Board:** Features a podium spotlight for the top 3 scholars and lists all classmates sorted by level and XP.
+
 ---
 
 ## 🛠️ Technology Stack
