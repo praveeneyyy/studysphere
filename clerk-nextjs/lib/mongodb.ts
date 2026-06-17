@@ -26,7 +26,7 @@ if (!cached) {
 
 const activeCache = cached;
 
-export async function connectToDatabase() {
+export async function connectDB() {
   if (activeCache.conn) {
     return activeCache.conn;
   }
@@ -50,3 +50,6 @@ export async function connectToDatabase() {
 
   return activeCache.conn;
 }
+
+// Fallback alias
+export const connectToDatabase = connectDB;
