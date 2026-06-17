@@ -1,24 +1,24 @@
 import mongoose, { Schema, Document, model, models } from "mongoose";
 
-export interface IFlashcard extends Document {
+export interface IQuiz extends Document {
   roomId: string;
-  userId?: string;
   question: string;
+  options: string[];
   answer: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const FlashcardSchema = new Schema<IFlashcard>(
+const QuizSchema = new Schema<IQuiz>(
   {
     roomId: { type: String, required: true },
-    userId: { type: String }, // Optional tracking of who generated it
     question: { type: String, required: true },
+    options: { type: [String], required: true },
     answer: { type: String, required: true },
   },
   { timestamps: true }
 );
 
-const Flashcard = models.Flashcard || model<IFlashcard>("Flashcard", FlashcardSchema);
+const Quiz = models.Quiz || model<IQuiz>("Quiz", QuizSchema);
 
-export default Flashcard;
+export default Quiz;
