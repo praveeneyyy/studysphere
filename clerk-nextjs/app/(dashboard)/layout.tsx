@@ -1,11 +1,15 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { getUserGamificationProfile } from "@/app/actions/gamification.actions";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Fetch user XP and Level to display in header
+  const profile = await getUserGamificationProfile();
+
   return (
     <div className="min-h-screen flex bg-zinc-50 dark:bg-zinc-950">
       {/* Sidebar Navigation */}
@@ -34,6 +38,12 @@ export default function DashboardLayout({
               Study Rooms
             </Link>
             <Link
+              href="/leaderboard"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-950 dark:hover:text-white transition-all"
+            >
+              Leaderboard
+            </Link>
+            <Link
               href="/profile"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-950 dark:hover:text-white transition-all"
             >
@@ -60,6 +70,21 @@ export default function DashboardLayout({
             Protected Area
           </div>
           <div className="flex items-center gap-4">
+            {/* Gamification Badge */}
+            <div className="flex items-center gap-2.5 bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 px-3.5 py-1.5 rounded-xl text-xs">
+              <span className="text-purple-600 dark:text-purple-400 font-extrabold uppercase">
+                Lvl {profile.level}
+              </span>
+              <div className="w-16 bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                <div
+                  className="bg-purple-600 h-full rounded-full"
+                  style={{ width: `${profile.progressPercentage}%` }}
+                ></div>
+              </div>
+              <span className="text-zinc-500 dark:text-zinc-400 font-medium">
+                {profile.xp} XP
+              </span>
+            </div>
             <UserButton />
           </div>
         </header>

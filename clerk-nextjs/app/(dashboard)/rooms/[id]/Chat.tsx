@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { socket } from "@/lib/socket";
 import MessageBubble from "./MessageBubble";
+import { addXP } from "@/app/actions/gamification.actions";
 
 interface IMessage {
   _id: string;
@@ -64,7 +65,7 @@ export default function Chat({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
 
@@ -76,6 +77,12 @@ export default function Chat({
     });
 
     setText("");
+
+    try {
+      await addXP(2, "Sent Chat Message");
+    } catch (err) {
+      console.error("Failed to award chat XP:", err);
+    }
   };
 
   return (

@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 import { HocuspocusProvider } from "@hocuspocus/provider";
+import { addXP } from "@/app/actions/gamification.actions";
 
 export default function NotesClient({
   initialContent,
@@ -59,6 +60,7 @@ function CollaborativeEditor({
 }) {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const lastContentRef = useRef<string>(initialContent);
 
   // Random cursor color
   const userColor = useMemo(() => {
@@ -140,9 +142,11 @@ function CollaborativeEditor({
     if (!editor) return;
 
     const interval = setInterval(async () => {
+      const html = editor.getHTML();
+      if (html === lastContentRef.current) return; // Only save and reward if content changed
+
       setSaving(true);
       try {
-        const html = editor.getHTML();
         const res = await fetch("/api/notes/save", {
           method: "POST",
           headers: {
@@ -155,6 +159,9 @@ function CollaborativeEditor({
         });
         if (res.ok) {
           setLastSaved(new Date());
+          lastContentRef.current = html;
+          // Award XP for editing notes
+          await addXP(10, "Contributed to Shared Notes");
         }
       } catch (err) {
         console.error("Auto-save error:", err);

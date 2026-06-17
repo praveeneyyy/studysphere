@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { logQuizAttempt } from "@/app/actions/analytics.actions";
+import { addXP } from "@/app/actions/gamification.actions";
 
 interface IQuizQuestion {
   _id: string;
@@ -70,8 +71,10 @@ export default function QuizClient({
       setShowResult(true);
       try {
         await logQuizAttempt(roomId, score, quizzes.length);
+        const xpAmount = 50 + score * 10;
+        await addXP(xpAmount, `Completed Room Quiz (${score}/${quizzes.length})`);
       } catch (err) {
-        console.error("Failed to log quiz attempt:", err);
+        console.error("Failed to log quiz attempt or add XP:", err);
       }
     } else {
       setIndex((prev) => prev + 1);
