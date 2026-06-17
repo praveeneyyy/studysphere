@@ -1,46 +1,42 @@
-import React from "react";
-import { redirect } from "next/navigation";
-import { currentUser } from "@clerk/nextjs/server";
-import { getRoomById, joinRoom } from "@/lib/actions/room";
-import { getMessages } from "@/lib/actions/message";
-import RoomClient from "./RoomClient";
+import Room from "@/models/Room";
+import { connectDB } from "@/lib/mongodb";
 
-interface PageProps {
+export default async function RoomPage({
+  params,
+}: {
   params: Promise<{ id: string }>;
-}
-
-export default async function RoomPage({ params }: PageProps) {
+}) {
   const { id } = await params;
-  const user = await currentUser();
 
-  if (!user) {
-    redirect("/sign-in");
+  await connectDB();
+  const room = await Room.findById(id);
+
+  if (!room) {
+    return (
+      <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 shadow-sm">
+        <h1 className="text-xl font-bold text-red-500">Room Not Found</h1>
+        <p className="text-sm text-zinc-500 mt-2">
+          The requested study room does not exist.
+        </p>
+      </div>
+    );
   }
-
-  // 1. Fetch the room details
-  const roomRes = await getRoomById(id);
-  if (!roomRes.success || !roomRes.room) {
-    redirect("/rooms");
-  }
-
-  const room = roomRes.room;
-
-  // 2. Auto-join user to room if they are not already in it
-  if (!room.members.includes(user.id)) {
-    const joinRes = await joinRoom(id);
-    if (joinRes.success && joinRes.room) {
-      room.members = joinRes.room.members;
-    }
-  }
-
-  // 3. Fetch initial messages
-  const messageRes = await getMessages(id);
-  const initialMessages = messageRes.success && messageRes.messages ? messageRes.messages : [];
 
   return (
-    <RoomClient
-      initialRoom={room}
-      initialMessages={initialMessages}
-    />
+    <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 shadow-sm">
+      <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+        {room.title}
+      </h1>
+      {room.description && (
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+          {room.description}
+        </p>
+      )}
+      <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800/80">
+        <span className="text-xs text-zinc-450 font-medium">
+          Subject: <span className="font-semibold text-zinc-800 dark:text-zinc-200">{room.subject}</span>
+        </span>
+      </div>
+    </div>
   );
 }
