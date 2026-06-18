@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@/lib/mockAuth";
 import { connectDB } from "@/lib/mongodb";
 import Room from "@/models/Room";
 import Note from "@/models/Note";
@@ -125,7 +125,7 @@ export async function deleteRoom(roomId: string) {
 
     // In a real app, check if user is the creator.
     // Since createdBy stores the display name, we'll allow deleting for demo,
-    // or we can verify by matching the creator if we stored clerkId in createdBy.
+    // or we can verify by matching the creator if we stored userId in createdBy.
     // Let's delete it directly for this dashboard CRUD.
     const deletedRoom = await Room.findByIdAndDelete(roomId);
     if (!deletedRoom) {

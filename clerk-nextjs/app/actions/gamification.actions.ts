@@ -1,12 +1,12 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/mockAuth";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { revalidatePath } from "next/cache";
 
 export interface ILeaderboardUser {
-  clerkId: string;
+  userId: string;
   name: string;
   image: string;
   xp: number;
@@ -21,7 +21,7 @@ export async function addXP(amount: number, reason: string) {
 
     await connectDB();
 
-    const user = await User.findOne({ clerkId: userId });
+    const user = await User.findOne({ userId: userId });
     if (!user) return { success: false, error: "User not found in database" };
 
     const oldLevel = user.level || 1;
@@ -68,7 +68,7 @@ export async function getLeaderboard() {
       .lean();
 
     const leaderboard: ILeaderboardUser[] = allUsers.map((u) => ({
-      clerkId: u.clerkId,
+      userId: u.userId,
       name: u.name || "Scholar",
       image: u.image || "",
       xp: u.xp || 0,
@@ -76,7 +76,7 @@ export async function getLeaderboard() {
     }));
 
     // Find the current user's rank (1-indexed)
-    const userIndex = leaderboard.findIndex((u) => u.clerkId === userId);
+    const userIndex = leaderboard.findIndex((u) => u.userId === userId);
     const userRank = userIndex !== -1 ? userIndex + 1 : leaderboard.length + 1;
 
     return {
@@ -105,7 +105,7 @@ export async function getUserGamificationProfile(): Promise<IGamificationProfile
 
   await connectDB();
 
-  const user = await User.findOne({ clerkId: userId }).lean();
+  const user = await User.findOne({ userId: userId }).lean();
   if (!user) {
     return { xp: 0, level: 1, nextLevelXP: 100, progressPercentage: 0 };
   }

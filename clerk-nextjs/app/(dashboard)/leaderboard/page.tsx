@@ -1,5 +1,5 @@
 import { getLeaderboard } from "@/app/actions/gamification.actions";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/mockAuth";
 import Link from "next/link";
 import React from "react";
 
@@ -26,7 +26,7 @@ export default async function LeaderboardPage() {
 
   const topThree = leaderboard.slice(0, 3);
   const remaining = leaderboard.slice(3);
-  const currentUserProfile = leaderboard.find((u) => u.clerkId === userId);
+  const currentUserProfile = leaderboard.find((u) => u.userId === userId);
 
   // Helper for rank medallions
   const getRankBadge = (rank: number) => {
@@ -173,11 +173,11 @@ export default async function LeaderboardPage() {
               <div className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
                 {remaining.map((item, index) => {
                   const actualRank = index + 4;
-                  const isSelf = item.clerkId === userId;
+                  const isSelf = item.userId === userId;
 
                   return (
                     <div
-                      key={item.clerkId}
+                      key={item.userId}
                       className={`px-6 py-4 flex items-center justify-between gap-4 transition-colors ${
                         isSelf ? "bg-purple-50/20 dark:bg-purple-950/10" : "hover:bg-zinc-50/50 dark:hover:bg-zinc-850/20"
                       }`}

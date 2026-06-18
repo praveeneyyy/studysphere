@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@clerk/nextjs";
+
 import { 
   FileText, Sparkles, Plus, Trash2, CheckCircle2, ChevronRight, 
   Play, BookOpen, AlertCircle, FileEdit, Check, HelpCircle
@@ -37,7 +37,7 @@ export default function NotesWorkspace({
   onOpenQuiz,
   onOpenFlashcards
 }: NotesWorkspaceProps) {
-  const { userId } = useAuth();
+  const userId = "mock-user-123";
   const [notes, setNotes] = useState<Note[]>([]);
   const [activeNote, setActiveNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState(false);

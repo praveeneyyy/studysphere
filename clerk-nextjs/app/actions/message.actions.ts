@@ -1,6 +1,6 @@
 "use server";
 
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@/lib/mockAuth";
 import Message from "@/models/Message";
 import { connectDB } from "@/lib/mongodb";
 import { revalidatePath } from "next/cache";

@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@/lib/mockAuth";
 import { redirect } from "next/navigation";
 import Room from "@/models/Room";
 import Message from "@/models/Message";

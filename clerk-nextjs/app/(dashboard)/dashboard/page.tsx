@@ -1,4 +1,4 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@/lib/mockAuth";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { getUserAnalytics } from "@/app/actions/analytics.actions";
@@ -14,7 +14,7 @@ export default async function Dashboard() {
   }
 
   await connectDB();
-  const dbUser = await User.findOne({ clerkId: clerkUser.id });
+  const dbUser = await User.findOne({ userId: clerkUser.id });
   const isSynced = !!dbUser;
 
   // 1. Fetch analytics and weekly study plan

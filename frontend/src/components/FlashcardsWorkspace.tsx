@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@clerk/nextjs";
+
 import { 
   FolderHeart, Sparkles, AlertCircle, RefreshCw, ChevronRight, Check, 
   HelpCircle, Star, Keyboard, BookOpen, Layers
@@ -36,7 +36,7 @@ interface FlashcardsWorkspaceProps {
 }
 
 export default function FlashcardsWorkspace({ selectedDoc }: FlashcardsWorkspaceProps) {
-  const { userId } = useAuth();
+  const userId = "mock-user-123";
   const [decks, setDecks] = useState<FlashcardDeck[]>([]);
   const [activeDeck, setActiveDeck] = useState<FlashcardDeck | null>(null);
   const [loading, setLoading] = useState(false);

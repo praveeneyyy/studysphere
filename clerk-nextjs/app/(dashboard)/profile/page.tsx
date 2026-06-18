@@ -1,4 +1,4 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@/lib/mockAuth";
 
 export default async function ProfilePage() {
   const user = await currentUser();

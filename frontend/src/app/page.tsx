@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UserButton, SignInButton } from "@clerk/nextjs";
-import { useAuth } from "@clerk/nextjs";
 import { 
   BookOpen, MessageSquare, Sparkles, FileQuestion, Layers, 
   HelpCircle, ChevronRight, Settings, Menu, X, LogIn, Moon, Sun, Library, BarChart3
@@ -19,7 +17,8 @@ import AnalyticsWorkspace from "@/components/AnalyticsWorkspace";
 import { API_BASE_URL } from "@/lib/api";
 
 export default function Home() {
-  const { userId, isSignedIn } = useAuth();
+  const userId = "mock-user-123";
+  const isSignedIn = true;
   const [documents, setDocuments] = useState<string[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("library");
@@ -187,24 +186,15 @@ export default function Home() {
             {/* Sidebar Bottom Profile/Settings */}
             <div className="p-4 border-t border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {isSignedIn ? (
-                  <>
-                    <UserButton />
-                    <div className="text-left">
-                      <p className="text-xs font-semibold text-zinc-950 dark:text-zinc-100 max-w-[130px] truncate">
-                        StudySphere User
-                      </p>
-                      <p className="text-[10px] text-zinc-400">Premium Plan</p>
-                    </div>
-                  </>
-                ) : (
-                  <SignInButton mode="modal">
-                    <button className="flex items-center gap-2 px-3 py-2 text-xs font-semibold bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full hover:opacity-90 transition-opacity">
-                      <LogIn size={12} />
-                      Sign In
-                    </button>
-                  </SignInButton>
-                )}
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">
+                  M
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-semibold text-zinc-950 dark:text-zinc-100 max-w-[130px] truncate">
+                    StudySphere User
+                  </p>
+                  <p className="text-[10px] text-zinc-400">Premium Plan</p>
+                </div>
               </div>
 
               {/* Mode Toggle Button */}

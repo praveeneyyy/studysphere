@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+
 import { Send, Sparkles, MessageSquare, AlertCircle, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import { API_BASE_URL } from "@/lib/api";
@@ -16,7 +16,7 @@ interface ChatWorkspaceProps {
 }
 
 export default function ChatWorkspace({ selectedDoc }: ChatWorkspaceProps) {
-  const { userId } = useAuth();
+  const userId = "mock-user-123";
   const [query, setQuery] = useState("");
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);

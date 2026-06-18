@@ -1,4 +1,4 @@
-import { UserButton } from "@clerk/nextjs";
+import { UserButton } from "@/lib/mockAuth";
 import Link from "next/link";
 import { getUserGamificationProfile } from "@/app/actions/gamification.actions";
 

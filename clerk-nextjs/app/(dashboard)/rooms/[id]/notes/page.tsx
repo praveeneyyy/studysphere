@@ -1,6 +1,6 @@
 import React from "react";
 import { redirect } from "next/navigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@/lib/mockAuth";
 import { connectDB } from "@/lib/mongodb";
 import Room from "@/models/Room";
 import Note from "@/models/Note";

@@ -3,7 +3,7 @@
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/mockAuth";
 import { connectDB } from "@/lib/mongodb";
 import Quiz from "@/models/Quiz";
 import Note from "@/models/Note";

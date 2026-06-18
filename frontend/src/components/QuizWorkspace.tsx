@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+
 import { 
   HelpCircle, CheckCircle2, XCircle, ChevronRight, Award, 
   RotateCcw, Sparkles, Clock, FileQuestion, ArrowRight, HelpCircle as HelpIcon
@@ -40,7 +40,7 @@ interface QuizWorkspaceProps {
 }
 
 export default function QuizWorkspace({ selectedDoc }: QuizWorkspaceProps) {
-  const { userId } = useAuth();
+  const userId = "mock-user-123";
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(false);

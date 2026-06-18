@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "@/lib/mockAuth";
 import { leaveRoom } from "@/lib/actions/room";
 import { sendMessage } from "@/lib/actions/message";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+
 import { 
   Flame, Award, Layers, Sparkles, BookOpen, CheckCircle, 
   HelpCircle, ChevronRight, AlertCircle, RefreshCcw, ClipboardList, Check
@@ -37,7 +37,7 @@ interface AnalyticsWorkspaceProps {
 }
 
 export default function AnalyticsWorkspace({ selectedDoc }: AnalyticsWorkspaceProps) {
-  const { userId } = useAuth();
+  const userId = "mock-user-123";
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [roadmapData, setRoadmapData] = useState<AgentResponse | null>(null);
   

@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/mockAuth";
 import Room from "@/models/Room";
 import { connectDB } from "@/lib/mongodb";
 
